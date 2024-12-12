@@ -40,35 +40,20 @@ module.exports.part_1 = ()=>{
 
 
 function is_nice_pair_check(string='') {
-    for (let i=0;i<string.length-1;i++) {
-        const pair = string.slice(i,i+1);
-        if (pair[0] == pair[1] && string.includes(pair[0].repeat(3))) {
-            return false;
-        }
-        if (string.indexOf(pair,i+1) > i) {
-            //console.log(`${i}-${string.indexOf(pair,i+1)}`)
-            return true;
-        }
-    }
-    return false;
+    const pair_check = /([a-z][a-z])[a-z]*\1/.test(string); //string.match(/([a-z][a-z])[a-z]*\1/);
+    return pair_check;
 }
 
-function is_nice_split_repeat(string='') {
-    for (let i=0;i<string.length-2;i++) {
-        if (string[i] == string[i+2]) {
-            if (string[i] != string[i+1]) {
-                return true;
-            };
-        }
-    }
-    return false;
+function is_nice_split_check(string='') {
+    const split_check = /([a-z])[a-z]\1/.test(string);
+    return split_check;
 }
 
 module.exports.part_2 = ()=>{
     const strings = input.split('\n');
     let nice_strings = 0;
     for (string of strings) {
-        if (is_nice_pair_check(string) && is_nice_split_repeat(string)) {
+        if (is_nice_pair_check(string) && is_nice_split_check(string)) {
             nice_strings += 1;
         }
     }
