@@ -27,7 +27,7 @@ const [year,day] = (process.argv.splice(2)[0]).split('/');
 
 
     const result = await fetch(`https://adventofcode.com/${year}/day/${parseInt(day)}/input`,{method: 'GET',headers: {cookie: `session=${process.env.TOKEN}`}});
-    const data = await result.text();
+    const data = (await result.text()).split('\n').filter(v=>v.length > 0).join('\n'    );
     fs.writeFileSync(path.join(day_dir,'input.txt'),data);
     if (!fs.existsSync(path.join(day_dir,'.gitignore'))) {
         fs.writeFileSync(path.join(day_dir,'.gitignore'),'input.txt');
