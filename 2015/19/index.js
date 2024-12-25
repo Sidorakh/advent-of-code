@@ -36,28 +36,19 @@ module.exports.part_1 = ()=>{
     
 }
 
-
+function count_substring(/** @type {string} */ string,/** @type {string} */ substr) {
+    let num = 0;
+    for (let i=string.indexOf(substr);i>=0;i=string.indexOf(substr,i+1), num += 1) {
+        // hah, empty loop
+        // #GOTTEM
+    }
+    return num;
+}
 
 module.exports.part_2 = ()=>{
     const {molecule,replacements} = parse_input(input);
+    // turns out, there's a shortcut for this!
 
-    replacements.sort((a,b)=>b.to.length-a.to.length);
-
-    let steps = 0;
-    
-    const target = 'e';
-    const visited = [molecule];
-    const queue = [{molecule, steps: 0}];
-
-    const solution = [];
-    const stack = [];
-    
-    /** @type {{molecule: string, steps: number}} */
-    let node;
-    while (node = queue.shift()) {
-        
-    }
-
-    console.log(`Solution foudn in ${steps}`);
+    const num = [...molecule].filter(v=>v.toLocaleUpperCase() == v).length - count_substring(molecule,'Rn')-count_substring(molecule,'Ar')-2*count_substring(molecule,'Y')-1;
+    console.log(`Steps: ${num}`)
 }
-// yeah no idwa how to do part 2, even looking up solutions didn't help
