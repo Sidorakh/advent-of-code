@@ -50,5 +50,5 @@ module.exports.part_2 = ()=>{
     // turns out, there's a shortcut for this!
 
     const num = [...molecule].filter(v=>v.toLocaleUpperCase() == v).length - count_substring(molecule,'Rn')-count_substring(molecule,'Ar')-2*count_substring(molecule,'Y')-1;
-    console.log(`Steps: ${num}`)
+    console.log(`Steps: ${num}`);
 }
