@@ -15,6 +15,21 @@ class Grid {
         if (x < 0 || x >= this.width() || y < 0 || y >= this.height()) return undefined;
         return this.data[y][x];
     }
+    region(x1,y1,x2,y2) {
+        if (x1 < 0 || x1 >= this.width() || y1 < 0 || y1 >= this.height()) return undefined;
+        if (x2 < 0 || x2 >= this.width() || y2 < 0 || y2 >= this.height()) return undefined;
+        const out = [];
+        for (let y=y1;y<=y2;y++) {
+            if (out[y-y1] == undefined) {
+                out[y-y1] = [];
+            }
+            for (let x=x1;x<=x2;x++) {
+                out[y-y1][x-x1] = this.get(x,y);
+            }
+        }
+        
+        return out;
+    }
     set(x,y,v) {
         if (x < 0 || y < 0) {
             return false;
@@ -41,12 +56,12 @@ class Grid {
     }
     static create(w,h,value=null) {
         const d = [];
-        for (let x=0;x<w;x++) {
-            const arr = [];
-            for (let y=0;y<h;y++) {
-                arr.push(value);
+        for (let y=0;y<h;y++) {
+            if (d[y] == undefined) d[y] = [];
+            for (let x=0;x<w;x++) {
+                d[y][x] = value;
             }
-            d.push(arr);
+            
         }
         return new Grid(d);
         
