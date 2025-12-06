@@ -1,20 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const input = fs.readFileSync(path.join(__dirname,'./input.txt'),'utf8').split('\n').map(v=>v.trim()).filter(v=>v.length > 0);
+const input = fs.readFileSync(path.join(__dirname,'./input.txt'),'utf8');
 
 function uint16 (n) {
     return n & 0xFFFF;
 }
 
 function not_16(n) {
-    /*
-    const arr = new Uint16Array(1)
-    arr[0] = uint16(n);
-    arr[0] = ~arr[0];
-    console.log(~n);
-    console.log(arr[0]);
-    return arr[0];
-    */
     if (~n < 0) {
         return uint16(65535 - n);
     } else if (~n > 0) {
@@ -24,134 +16,11 @@ function not_16(n) {
     }
 }
 
-// function recursive_simulator(/** @type {Map<string,{type: string, left: string | number, right: string | number, target: string;}} */ wires,/** @type {string} */ target, /** @type {Map<string,number>} */ solved, /** @type {Map<string,Boolean> */ visited) {
-//
-//     visited.set(target,true);
-//     const wire = wires.get(target);
-//     console.log(target);
-//     let left = wire.left;
-//     let right = wire.right;
-//
-//     if (typeof(left) == 'string' && left != '') {
-//         if (!solved.has(left)) {
-//             left = recursive_simulator(wires,left,solved,visited);
-//         } else {
-//             left = solved.get(left);
-//         }
-//     }
-//     if (typeof(right) == 'string' && right != '') {
-//         if (!solved.has(right)) {
-//             right = recursive_simulator(wires,right,solved,visited);
-//         } else {
-//             right = solved.get(right);
-//         }
-//     }
-//     if (wire.type == 'ASSIGN') {
-//         solved.set(wire.target,wire.left);
-//     }
-//     if (wire.type == 'NOT') {
-//         solved.set(wire.target,not_16(wire.left));
-//     }
-//     if (wire.type == 'AND') {
-//         solved.set(uint16(wire.target,wire.left & wire.right));
-//     }
-//     if (wire.type == 'OR') {
-//         solved.set(uint16(wire.target,wire.left | wire.right));
-//     }
-//     if (wire.type == 'LSHIFT') {
-//         solved.set(uint16(wire.target,wire.left << wire.right));
-//     }
-//     if (wire.type == 'RSHIFT') {
-//         solved.set(uint16(wire.target,wire.left >> wire.right));
-//     }
-//
-//
-//     return solved.get(wire.target);
-// }
-
-function unique_push(array,item) {
-    if (array.includes(item)) return;
-    array.push(item);
-}
-function calculate_circuit(/** @type {Map<string,{type: string, left: string | number, right: string | number, target: string;}} */ wires,/** @type {string} */ target, /** @type {Map<string,number>} */ solved) {
-    /** @type {{type: string, left: string | number, right: string | number, target: string;}[]} */
-    const stack = [];
-    stack.push(wires.get(target));
-    while (stack.length > 0) {
-        const node = stack.shift();
-        if (node == undefined) continue;
-        console.log(`${(node.target)} | ${stack.length} | ${solved.size}`);
-        if (node.type == 'ASSIGN' || node.type == 'NOT') {
-            // only one element on the LHS
-            if (typeof(node.left) == 'string') {
-                if (solved.get(node.left)) {
-                    node.left = solved.get(node.left);
-                } else {
-                    unique_push(stack,wires.get(node.left));
-                    unique_push(stack,node);
-                }
-            } else {
-                if (node.type == 'ASSIGN') {
-                    solved.set(node.target, node.left);
-                } else if (node.type == 'NOT') {
-                    solved.set(node.target,not_16(node.left));
-                }
-            }
-        } else {
-            // two elements on the LHS
-            if (node.target == 'b' && node.type == 'RSHIFT') {
-                console.log('hello b node?')
-            }
-            if (typeof(node.left) == 'string' || typeof(node.right) == 'string') {
-                
-                if (typeof(node.left) == 'string') {
-                    if (solved.get(node.left)) {
-                        node.left = solved.get(node.left);
-                    } else {
-                        unique_push(stack,wires.get(node.left));
-                    }
-                }
-                unique_push(stack,node);
-                if (typeof(node.right) == 'string') {
-                    if (solved.get(node.right)) {
-                        node.left = solved.get(node.right);
-                    } else {
-                        unique_push(stack,wires.get(node.right));
-                    }
-                }
-            } else {
-                // both numbers -> solvable
-                if (node.type == 'AND') {
-                    solved.set(node.target,uint16(node.left & node.right));
-                }
-                if (node.type == 'OR') {
-                    solved.set(node.target,uint16(node.left | node.right));
-                }
-                if (node.type == 'LSHIFT') {
-                    solved.set(node.target,uint16(node.left << node.right));
-                }
-                if (node.type == 'RSHIFT') {
-                    
-                    solved.set(node.target,uint16(node.left >> node.right));
-                }
-            }
-
-        }
-        if (solved.size == 6) {
-            console.log([...solved.entries()]);
-            process.exit();
-        }
-    }
-    return solved.get(target);
-}
-
-module.exports.part_1 = ()=>{
-    /** @type {Map<string,{type: string, left: string | number, right: string | number, target: string;}} */
+const reg_is_digit = /^\d+$/;
+function parse_input(/** @type {string} */ input) {
+    /** @type {Map<string,{type: 'ASSIGN'|'AND'|'OR'|'LSHIFT'|'RSHIFT'|'NOT', left: string | number, right: string | number, target: string;}} */
     const wires = new Map();
-    
-    const reg_is_digit = /^\d+$/;
-
-    for (const wire of input) {
+    for (const wire of input.split('\n')) {
         const [lhs,rhs] = wire.split('->').map(v=>v.trim());
         const op = {
             type: '',
@@ -185,22 +54,125 @@ module.exports.part_1 = ()=>{
                 }
             }
         }
-
         wires.set(rhs,op);
     }
+    return wires;
+}
 
-    // and now, solve
-    const target = 'a';
-
+module.exports.part_1 = (log=true)=>{
+    const wires = parse_input(input);
     const solved = new Map();
-    const visited = new Map();
-    
-    const wire_a = calculate_circuit(wires,'a',solved);
 
-    console.log(`Wire A signal: ${wire_a}`)
+    const stack = [...wires.values()];
+
+    while (stack.length > 0) {
+        const wire = stack.shift();
+        //console.log(stack)
+        //console.log([...solved.entries()].map(v=>`${v[0]}: ${v[1]}`))
+        if (solved.has(wire.target)) continue;
+        if (wire.type == 'ASSIGN') {
+            if (reg_is_digit.test(wire.left)) {
+                solved.set(wire.target,parseInt(wire.left));
+            } else if (solved.has(wire.left)) {
+                solved.set(wire.target,solved.get(wire.left));
+            } else {
+                stack.push(wire);
+            }
+            continue;
+        }
+        const left_solved = reg_is_digit.test(wire.left) || solved.has(wire.left);
+        const left_is_register = !reg_is_digit.test(wire.left);
+        if (wire.type == 'NOT') {
+            if (!left_solved) {
+                stack.push(wire);
+                continue;
+            }
+            const left = left_is_register ? solved.get(wire.left) : parseInt(wire.left);
+            solved.set(wire.target,not_16(left))
+            continue;
+        }
+        const right_solved = reg_is_digit.test(wire.right) || solved.has(wire.right);
+        const right_is_register = !reg_is_digit.test(wire.right);
+        if (!(left_solved && right_solved)) {
+            stack.push(wire);
+            continue;
+        }
+        const left = left_is_register ? solved.get(wire.left) : parseInt(wire.left);
+        const right = right_is_register ? solved.get(wire.right) : parseInt(wire.right);
+        if (wire.type == 'AND') {
+            solved.set(wire.target, uint16(left & right));
+        } else if (wire.type == 'OR') {
+            solved.set(wire.target, uint16(left | right));
+        } else if (wire.type == 'LSHIFT') {
+            solved.set(wire.target, uint16(left << right));
+        } else if (wire.type == 'RSHIFT') {
+            solved.set(wire.target, uint16(left >> right));
+        }
+        
+    }
+    if (log) {
+        console.log(`Value of a: ${solved.get('a')}`);
+    }
+    return solved.get('a');
     
 }
 
 module.exports.part_2 = ()=>{
 
+    const wires = parse_input(input);
+    const solved = new Map();
+
+    const new_a_signal = this.part_1(false);
+    solved.set('b',new_a_signal);
+
+    const stack = [...wires.values()];
+
+    while (stack.length > 0) {
+        const wire = stack.shift();
+        //console.log(stack)
+        //console.log([...solved.entries()].map(v=>`${v[0]}: ${v[1]}`))
+        if (solved.has(wire.target)) continue;
+        if (wire.type == 'ASSIGN') {
+            if (reg_is_digit.test(wire.left)) {
+                solved.set(wire.target,parseInt(wire.left));
+            } else if (solved.has(wire.left)) {
+                solved.set(wire.target,solved.get(wire.left));
+            } else {
+                stack.push(wire);
+            }
+            continue;
+        }
+        const left_solved = reg_is_digit.test(wire.left) || solved.has(wire.left);
+        const left_is_register = !reg_is_digit.test(wire.left);
+        if (wire.type == 'NOT') {
+            if (!left_solved) {
+                stack.push(wire);
+                continue;
+            }
+            const left = left_is_register ? solved.get(wire.left) : parseInt(wire.left);
+            solved.set(wire.target,not_16(left))
+            continue;
+        }
+        const right_solved = reg_is_digit.test(wire.right) || solved.has(wire.right);
+        const right_is_register = !reg_is_digit.test(wire.right);
+        if (!(left_solved && right_solved)) {
+            stack.push(wire);
+            continue;
+        }
+        const left = left_is_register ? solved.get(wire.left) : parseInt(wire.left);
+        const right = right_is_register ? solved.get(wire.right) : parseInt(wire.right);
+        if (wire.type == 'AND') {
+            solved.set(wire.target, uint16(left & right));
+        } else if (wire.type == 'OR') {
+            solved.set(wire.target, uint16(left | right));
+        } else if (wire.type == 'LSHIFT') {
+            solved.set(wire.target, uint16(left << right));
+        } else if (wire.type == 'RSHIFT') {
+            solved.set(wire.target, uint16(left >> right));
+        }
+        
+    }
+
+    console.log(`Value of a: ${solved.get('a')}`)
+    return solved.get('a');
 }
