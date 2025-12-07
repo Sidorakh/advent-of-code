@@ -78,11 +78,13 @@ module.exports.part_2 = ()=>{
                     beam_numbers[x-1] += beam_numbers[x];
                     beam_numbers[x+1] += beam_numbers[x];
                     beam_numbers[x] = 0;
+                    splits += 1;
                 }
             }
         }
     }
 
     console.log(`Part 2: ${beam_numbers.reduce((acc,v)=>acc+v)}`);
+    console.log(splits);
 
 }
