@@ -85,6 +85,6 @@ module.exports.part_2 = ()=>{
     }
 
     console.log(`Part 2: ${beam_numbers.reduce((acc,v)=>acc+v)}`);
-    console.log(splits);
+    //console.log(splits); <- works for part 1, who knew
 
 }
