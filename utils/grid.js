@@ -55,13 +55,9 @@ class Grid {
         return this.data.map(v=>v.join('')).join('\n')
     }
     static create(w,h,value=null) {
-        const d = [];
+        const d = new Array(h);
         for (let y=0;y<h;y++) {
-            if (d[y] == undefined) d[y] = [];
-            for (let x=0;x<w;x++) {
-                d[y][x] = value;
-            }
-            
+            d[y] = new Array(w).fill(value);
         }
         return new Grid(d);
         
